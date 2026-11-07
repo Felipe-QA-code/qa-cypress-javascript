@@ -2,20 +2,21 @@
 
 describe('Finanzas', () => {
 
-    beforeEach(() => {cy.session('logearse', () => {
-            cy.visit('https://parabank.parasoft.com/parabank/index.htm');
+    beforeEach(() => {
+        cy.session('logearse', () => {
+              cy.visit('https://parabank.parasoft.com/parabank/index.htm');
             cy.get('input[name="username"]').type('john');
             cy.get('input[name="password"]').type('demo');
             cy.get('input[value="Log In"]').click();
             cy.contains('Accounts Overview').should('be.visible'); 
         }, {
-    validate() {
-      cy.request({
-        url: 'https://parabank.parasoft.com/parabank/overview.htm',
-        followRedirect: false
-      }).its('status').should('eq', 200);
-    }
-  });
+            validate() {
+                cy.request({
+                    url: 'https://parabank.parasoft.com/parabank/overview.htm',
+                    followRedirect: false
+                }).its('status').should('eq', 200);
+        }
+    });
     
         cy.visit('https://parabank.parasoft.com/parabank/index.htm');
     });
@@ -36,9 +37,8 @@ describe('Finanzas', () => {
         cy.get('#accountTable tbody tr:last-child td:nth-child(2)').then((balancetotal) => {
             const Balance = Number(balancetotal.text().replace(/[$,]/g, ''))
             expect(Number(total.toFixed(2))).to.equal(Balance)
-        });
-        
-       });
+        });    
+    });
 
     it('transferir efectivo', () => {
         cy.get('a[href="transfer.htm"]').click();
@@ -65,5 +65,4 @@ describe('Finanzas', () => {
         // cy.get('a[href*="id=12345"]').click() otra forma
         cy.get('#transactionTable').should('be.visible');
     });
-
 });
