@@ -1,32 +1,81 @@
-/// <reference types="cypress"/>
+/// <reference types="cypress" />
 
-describe('Finanzas', () =>{beforeEach(() => {cy.visit('https://parabank.parasoft.com/parabank/index.htm')})
+describe('Finanzas', () => {
 
-it('parabank', () =>{
+    beforeEach(() => {
+            cy.session('logearse', () => {
+            
+            cy.visit('https://parabank.parasoft.com/parabank/index.htm');
+            
+            cy.get('input[name="username"]').type('john');
+            cy.get('input[name="password"]').type('demo');
+            cy.get('input[value="Log In"]').click();
+            
+            cy.contains('Accounts Overview').should('be.visible'); 
+        }, {
+    validate() {
+      cy.request({
+        url: 'https://parabank.parasoft.com/parabank/overview.htm',
+        followRedirect: false
+      }).its('status').should('eq', 200);
+    }
+  });
+    
+        cy.visit('https://parabank.parasoft.com/parabank/index.htm');
+    });
 
-const username = `felipe${Date.now()}`;
+    it('validar monto', () => {
+        cy.get('#leftPanel a[href="overview.htm"]').click();
+        cy.get('#accountTable').should('be.visible');
+        cy.get('#accountTable th').should('have.length', 3);
+        cy.get('#accountTable th').eq(0).should('have.text', 'Account');
+        cy.get('#accountTable th').eq(1).should('have.text', 'Balance*');
+        cy.get('#accountTable th').eq(2).should('have.text', 'Available Amount');
+        let total = 0
+        cy.get('#accountTable tbody tr:not(:last-child) td:nth-child(2)').each((fila)=>{
+            total += Number(fila.text().replace(/[$,]/g, ''))
+            }).then(()=>{
+                cy.log('TOTAL:, ${total.toFixed(2)}')
+        });
+        cy.get('#accountTable tbody tr:last-child td:nth-child(2)').then((balancetotal) => {
+            const Balance = Number(balancetotal.text().replace(/[$,]/g, ''))
+            expect(Number(total.toFixed(2))).to.equal(Balance)
+        });
+        
+       });
 
-cy.contains('Register').click();
-cy.url().should('include', '/register.htm')
-cy.get('.form2').should('be.visible');
-cy.get('[id="customer.firstName"]').type('Felipe');
-cy.get('[id="customer.lastName"]').type('Perez');
-cy.get('[id="customer.address.street"]').type('blancoGalindo');
-cy.get('[name="customer.address.city"]').type('cochabamba');
-cy.get('[id="customer.address.state"]').type('Bolivia');
-cy.get('[id="customer.address.zipCode"]').type('12334');
-cy.get('[id="customer.phoneNumber"]').type('67452558');
-cy.get('[id="customer.ssn"]').type('123');
-cy.get('[id="customer.username"]').type(username);
-cy.get('[id="customer.password"]').type('1234');
-cy.get('#repeatedPassword').type('1234');
-cy.get('tr input[type="submit"]').click();
-cy.contains('Your account was created successfully')
-.should('be.visible');
-cy.get('#leftPanel').should('be.visible');
-cy.get('ul li a').eq(2).click();
-cy.get('#accountTable').should('be.visible');
-cy.get('tbody tr').eq(2).should('be.visible').and('have.text', '$515.50');
-});
+    it('transferir efectivo', () => {
+        cy.get('a[href="transfer.htm"]').click();
+        cy.url().should('include', '/transfer.htm');
+        cy.get('#transferForm').should('be.visible');
+        cy.get('#amount').type('100');
+        cy.get('#fromAccountId').select(0);
+        cy.get('#fromAccountId').should('have.value', '12345')
+        cy.get('#toAccountId').select(1);
+        cy.get('#toAccountId').should('have.value', '12456')
+        cy.get('input.button').click();
+        cy.contains('Transfer Complete!').should('be.visible');
+        cy.get('#amountResult').should('contain', '100');
+        cy.get('#amountResult').then((monto)=>{
+           cy.log(`TRANSFERENCIA:, ${monto.text()}`)
+        })
+    });
+
+    it('validar transferencia', () => {
+        cy.get('a[href="overview.htm"]').click();
+        // vamos a la cuenta de origen 
+        cy.get('a[href="activity.htm?id=12345"]').click()
+        cy.get('#transactionTable').should('be.visible');
+        cy.get('#month').select(0);
+        cy.get('#month').should('have.value','All')
+        cy.get('#transactionType').select(2);
+        cy.get('#transactionType').should('have.value', 'Debit')
+        cy.get('input.button').click();
+        cy.get('#transactionTable').should('be.visible');
+        cy.get('#transactionTable tbody tr:last-child td:nth-child(2) a').click();
+        cy.url().should('include', 'transaction.htm?');
+        cy.contains('Transaction Details').should('be.visible');
+
+    });
 
 });

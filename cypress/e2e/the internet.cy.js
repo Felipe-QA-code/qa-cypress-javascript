@@ -1,6 +1,9 @@
 /// <reference types = "cypress" />
 
-describe('internet', () => {beforeEach(() => {cy.visit('https://the-internet.herokuapp.com/')})
+describe('internet', () => {
+  beforeEach(() => {
+    
+    cy.visit('https://the-internet.herokuapp.com/')})
     
 it ('primero', async ()=> {
 

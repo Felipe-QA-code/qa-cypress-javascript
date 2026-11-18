@@ -1,10 +1,9 @@
 /// <reference types="cypress" />
 
 describe('SauceDemo - Login', () => {
-
   beforeEach(() => {
-    cy.visit('https://www.saucedemo.com')
-  })
+
+    cy.visit('https://www.saucedemo.com')})
 
   it('debería loguearse correctamente con credenciales válidas', () => {
     cy.get('#user-name').type('standard_user')
@@ -22,8 +21,7 @@ describe('SauceDemo - Login', () => {
     cy.get('#login-button').click()
 
     // Verificamos el mensaje de error
-    cy.get('[data-test="error"]')
-      .should('be.visible')
+    cy.get('[data-test="error"]').should('be.visible')
       .and('contain.text', 'Username and password do not match')
   })
 
